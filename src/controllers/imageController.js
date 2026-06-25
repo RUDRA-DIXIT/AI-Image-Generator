@@ -51,4 +51,23 @@ const generateImage = async (req, res, next) => {
   }
 };
  
-module.exports = { generateImage };
+/**
+ * GET /api/images/history
+ * Returns all images belonging to the authenticated user, newest first.
+ */
+const getImageHistory = async (req, res, next) => {
+  try {
+    const images = await Image.find({ user: req.user.userId }).sort({ createdAt: -1 });
+ 
+    res.status(200).json({
+      success: true,
+      data: {
+        images,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+ 
+module.exports = { generateImage, getImageHistory };
