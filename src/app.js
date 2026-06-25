@@ -3,6 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -30,12 +31,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ---- Route mounting placeholder ----
-// Once built, routers will be mounted here, e.g.:
-// app.use("/api/auth", require("./routes/authRoutes"));
-// app.use("/api/users", require("./routes/userRoutes"));
-// app.use("/api/images", require("./routes/imageRoutes"));
-// app.use("/api/payments", require("./routes/paymentRoutes"));
+// ---- Routes ----
+app.use("/api/auth", authRoutes);
 
 // ---- Error handling (must be last) ----
 app.use(notFound);
