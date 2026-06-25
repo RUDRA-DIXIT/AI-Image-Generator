@@ -1,10 +1,12 @@
 const User = require("../models/User");
+const Image = require("../models/Image");
 const ApiError = require("../utils/apiError");
+const { generateImage: generateImageFromProvider } = require("../services/groqService");
  
 /**
  * POST /api/images/generate
- * Placeholder — validates prompt, user, and credits, but does NOT call
- * the image generation provider yet. That integration comes later.
+ * Validates prompt/user/credits, generates an image via groqService,
+ * persists the Image document, and deducts one credit from the user.
  */
 const generateImage = async (req, res, next) => {
   try {
@@ -24,14 +26,25 @@ const generateImage = async (req, res, next) => {
       throw new ApiError(400, "INSUFFICIENT_CREDITS", "You do not have enough credits to generate an image");
     }
  
-    // TODO: call Groq image generation service here
-    // TODO: upload result to Cloudinary
-    // TODO: save Image document
-    // TODO: atomically decrement user credits
+    const { imageUrl } = await generateImageFromProvider(prompt);
+ 
+    await Image.create({
+      user: user._id,
+      prompt,
+      imageUrl,
+      status: "completed",
+      creditsUsed: 1,
+    });
+ 
+    user.credits -= 1;
+    await user.save();
  
     res.status(200).json({
       success: true,
-      message: "Image generation controller placeholder ready",
+      data: {
+        imageUrl,
+        remainingCredits: user.credits,
+      },
     });
   } catch (error) {
     next(error);
